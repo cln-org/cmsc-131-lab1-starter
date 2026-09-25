@@ -130,6 +130,11 @@ encode_header
 - Registers used: edi (src) / esi(dest) holds the two pointers  for the entire routine, eax assembles or splits each field's bytes, ebx is a saved scratch, while ecx/edx are also scratch but can double as the pushed args to ip_checksum. These are all according to the cdecl contract and what the initial purpose of each contract is.
 - Struct offsets: The routine reads from the exact offsets where decode_header has written
 
+ip_checksum(hdr, len) 
+- never touches the struct, its only inputs are the raw buffer and a length. It sums the buffer as ten 16-bit words, folds any overflow back in until the result fits in 16 bits, and returns the one's complement of that sum. 
+- It's called two ways: directly by `driver.c` on decode, to check that a header's own sum(checksum included) comes out to zero; and by `encode_header` on encode, to compute the value that gets inserted.
+- Registers: esi walks through the buffer two bytes at a time, ecx counts down the remaining length, eax holds the running sum and, after folding and complementing, the final answer returned in ax.
+
 ### Timeline
 
 One line per week. Name the subsystem each week finishes and the member
