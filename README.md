@@ -124,9 +124,9 @@ share one. The commit history must agree with this table.
 
 | Subsystem | Owner |
 |---|---|
-| Decode path (`decode.asm`) | |
-| Encode path (`encode.asm`) | |
-| Checksum and tests (`checksum.asm`, `tests/`) | |
+| Decode path (`decode.asm`) | Erine Lourdes Medalla |
+| Encode path (`encode.asm`) | Ryona Cassandra Honrado |
+| Checksum and tests (`checksum.asm`, `tests/`) | Adrienne Nicole Tipon, Jhon Chriztopher Nice |
 
 ## Quirks and Issues
 
