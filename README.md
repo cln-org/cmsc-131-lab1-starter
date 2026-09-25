@@ -112,10 +112,23 @@ The IPv4 header is a fixed 20-byte block. Some fields line up on byte boundaries
 How the three routines split the work. Which registers each routine uses,
 and how the struct offsets in `driver.c` map to the fields.
 
-- `decode_header(hdr, out)` reads the 20 raw bytes and fills every
-  field into the `ipv4_fields` struct. It only extracts — it doesn't
-  touch the checksum's validity, print anything, or read the file;
-  `driver.c` handles all of that separately.
+decode_header(hdr, out)
+- Reads the 20 raw bytes and fills every field into the `ipv4_fields` struct. It only extracts; it doesn't touch the checksum's validity, print anything, or read the file. Driver.c handles all of that separately.
+- Registers used: esi (src) / edi (dest) holds the two pointers  for the entire routine, eax assembles or splits each field's bytes, ebx is a saved scratch, while ecx/edx are also scratch but can double as the pushed args to ip_checksum. These are all according to the cdecl contract and what the initial purpose of each contract is.
+- Struct offsets: 
++0  version          +4  ihl
++8  dscp             +12 ecn
++16 total_length     +20 identification
++24 flags            +28 fragment_offset
++32 ttl              +36 protocol
++40 checksum
++44 src[0] src[1] src[2] src[3]
++48 dst[0] dst[1] dst[2] dst[3]
+
+encode_header
+- Reads the populated struct and packs all thirteen fields into a 20-byte buffer hdr in big-endian, then compute and insert the checksum.
+- Registers used: edi (src) / esi(dest) holds the two pointers  for the entire routine, eax assembles or splits each field's bytes, ebx is a saved scratch, while ecx/edx are also scratch but can double as the pushed args to ip_checksum. These are all according to the cdecl contract and what the initial purpose of each contract is.
+- Struct offsets: The routine reads from the exact offsets where decode_header has written
 
 ### Timeline
 
