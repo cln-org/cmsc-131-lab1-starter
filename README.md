@@ -99,10 +99,23 @@ Keep each part short. Update it when the plan changes.
 What the tool must read, what it must write, and which field is the hard
 one. State the header layout in your own words.
 
+The IPv4 header is a fixed 20-byte block. Some fields line up on byte boundaries (TTL, protocol, the addresses), but several don't:
+
+- Byte 0 packs two 4-bit fields into one byte: the top nibble is the version, the bottom nibble is the IHL.
+- Byte 1 packs DSCP (6 bits) and ECN (2 bits) the same way.
+- Bytes 2-3, 4-5, and 10-11 are 16-bit numbers, but stored big-endian (network byte order) while our CPU is little-endian. We can't just mov these into a register — we load each byte separately and shift/OR them together in the order the network expects.
+- Bytes 6-7 are the worst case: 3 flag bits, then a 13-bit fragment offset that crosses the byte boundary. We combine both bytes into one 16-bit word first, then mask out the pieces we want (top 3 bits = flags, low 13 bits via 0x1FFF = fragment offset).
+- Bytes 12-15 and 16-19 are the source/destination addresses — four plain bytes each, no shifting needed.
+
 ### Solution architecture
 
 How the three routines split the work. Which registers each routine uses,
 and how the struct offsets in `driver.c` map to the fields.
+
+- `decode_header(hdr, out)` reads the 20 raw bytes and fills every
+  field into the `ipv4_fields` struct. It only extracts — it doesn't
+  touch the checksum's validity, print anything, or read the file;
+  `driver.c` handles all of that separately.
 
 ### Timeline
 
