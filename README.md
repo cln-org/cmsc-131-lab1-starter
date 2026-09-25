@@ -142,9 +142,9 @@ who owns it.
 
 | Week | Goal | Owner |
 |---|---|---|
-| 1 | | |
-| 2 | | |
-| 3 | | |
+| 1 | Decode path (`decode.asm`) | Erine Lourdes Medalla |
+| 2 | Encode path (`encode.asm`) | Ryona Cassandra Honrado |
+| 3 | Checksum and tests (`checksum.asm`, `tests/`) | Adrienne Nicole Tipon &  Jhon Chriztopher Nice |
 | 4 | Defense | |
 
 ## Subsystem Ownership
