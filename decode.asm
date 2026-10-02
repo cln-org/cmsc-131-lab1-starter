@@ -61,10 +61,12 @@ _decode_header:
         ; Nothing here reads the file or prints. This routine only fills
         ; the struct, and driver.c does the rest.
         ;
-        mov     esi, [ebp+8]    ; hdr
-        mov     edi, [ebp+12]   ; out
 
-        movzx   eax, byte [esi]      ; load byte 0
+        mov     esi, [ebp+8]    ; hdr pointer to the raw header
+        mov     edi, [ebp+12]   ; out struct pointer
+
+        ; byte 0: version top 4 bits, ihl the low 4
+        movzx   eax, byte [esi]      ; reads byte 0
         mov     ebx, eax
         shr     ebx, 4                ; high nibble
         and     ebx, 0x0F
@@ -72,6 +74,75 @@ _decode_header:
 
         and     eax, 0x0F              ; low nibble
         mov     [edi+4], eax           ; ihl
+
+        ; byte 1: dscp 6 bits, ecn the low 2
+        movzx   eax, byte [esi+1]      ; reads byte 1
+        mov     ebx, eax
+        shr     ebx, 2                 ; 8 - 2 = 6 bits left
+        mov     [edi+8], ebx           ; dscp
+        and     eax, 0x03              ; low 2 bits
+        mov     [edi+12], eax          ; ecn
+
+        ; bytes 2-3: total length, big-endian, 16 bits
+        movzx   eax, byte [esi+2]      ; reads byte 2
+        shl     eax, 8                 ; moves 8 bits for lowbyte
+        movzx   edx, byte [esi+3]      ; reads byte 3
+        or      eax, edx               ; merges into one 16-bit
+        mov     [edi+16], eax          ; total_length
+
+        ; bytes 4-5: identification, big-endian, 16 bits
+        movzx   eax, byte [esi+4]    
+        shl     eax, 8                 ; moves 8 bits for lowbyte
+        movzx   edx, byte [esi+5]      
+        or      eax, edx                ; merges into one 16-bit
+        mov     [edi+20], eax          ; identification
+
+        ; bytes 6-7: six-seven!! flags top 3 bits + fragment offset low 13 bits
+        movzx   eax, byte [esi+6]    
+        shl     eax, 8
+        movzx   edx, byte [esi+7]     
+        or      eax, edx               ; combines into one whole 16-bit word
+ 
+        mov     ebx, eax
+        shr     ebx, 13                ; move top 3 bits down
+        and     ebx, 0x07              ; keep the 3 bits
+        mov     [edi+24], ebx          ; flags
+ 
+        and     eax, 0x1FFF            ; mask 13 bits 
+        mov     [edi+28], eax          ; fragment_offset
+        
+        ; byte 8: ttl 8 bits , byte 9: protocol 8 bits
+        movzx   eax, byte [esi+8]
+        mov     [edi+32], eax          ; ttl
+        movzx   eax, byte [esi+9]
+        mov     [edi+36], eax          ; protocol
+ 
+        ; bytes 10-11: header checksum, big-endian, 16 bits
+        movzx   eax, byte [esi+10]    
+        shl     eax, 8                  ; moves up for 8 bits
+        movzx   edx, byte [esi+11]     
+        or      eax, edx                ; merge
+        mov     [edi+40], eax          ; header checksum
+
+        ; bytes 12-15: source address, 32 bits
+        mov     al, [esi+12]
+        mov     [edi+44], al           ; stores as src[0]
+        mov     al, [esi+13]
+        mov     [edi+45], al           ; src[1]
+        mov     al, [esi+14]
+        mov     [edi+46], al           ; src[2]
+        mov     al, [esi+15]
+        mov     [edi+47], al           ; src[3]
+
+        ; bytes 16-19: destination address, 32 bits
+        mov     al, [esi+16]
+        mov     [edi+48], al           ; dst[0]
+        mov     al, [esi+17]
+        mov     [edi+49], al           ; dst[1]
+        mov     al, [esi+18]
+        mov     [edi+50], al           ; dst[2]
+        mov     al, [esi+19]
+        mov     [edi+51], al           ; dst[3]
 
         popa
         mov     eax, 0
