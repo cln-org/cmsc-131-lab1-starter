@@ -83,18 +83,20 @@ _ip_checksum:
         jmp .sum
 
 .fold:
-        ;copy sum from edx to eax
-        ;shift eax (high half) to the right by 16 bits
-        ;jump to done if zero
-        ;drop the high half of edx
-        ;add edx and eax
-        ;jump to fold(repeat)
+        mov     eax, edx
+        shr     eax, 16           ; high half 16-32bits 
+        jz      .done             ; nothing left to fold
+        
+        and     edx, 0xFFFF       ; keep low half
+        add     edx, eax          ; end-around carry
+        jmp     .fold             ; large sums need folds twice
 
 .done:
-        ;flip every bit in edx
-        ;drop again the high half of edx (keep only the low bits)
-        ;write edx into eax in stack located at [esp+28]
-        popa
-        mov     eax, 0
+        mov     eax, edx
+        not     eax               ; one's complement
+        and     eax, 0xFFFF       ; low 16 bits into ax
+
+        pop     esi
+        pop     ebx
         leave
         ret
