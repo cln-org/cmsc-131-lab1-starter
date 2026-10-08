@@ -95,8 +95,8 @@ _ip_checksum:
         mov     eax, edx
         not     eax               ; one's complement
         and     eax, 0xFFFF       ; low 16 bits into ax
+        mov     [esp+28], eax     ; replace saved EAX with the answer
 
-        pop     esi
-        pop     ebx
+        popa
         leave
         ret
