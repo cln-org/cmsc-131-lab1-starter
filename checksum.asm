@@ -62,7 +62,41 @@ _ip_checksum:
         ; enough. Leave the answer in ax when you return.
         ;
 
+        mov esi, [ebp+8] ;hdr, pointer to bytes
+        mov ecx, [ebp+12] ;len / byte count
+        shr ecx, 1 ;moves binary positions, len/2 = num of 16-bit words (10)
+        xor edx, edx ;zeroes the 32-bit accumulator
+
+.sum:
+        test ecx, ecx ;checks if ecx is zero, nothing more to add
+        jz .fold 
+        movzx eax, byte[esi] ;first byte of the pair (high byte)
+        
+        shl eax, 8 ;move to bits 8-15
+        movzx ebx, byte [esi+1] ;secont byte of the pair (low byte)
+        or eax, ebx 
+
+        add edx, eax ;keep bits, carry out bit goes to bit 16+ instead of being lost
+        
+        add esi, 2 ;advance to the next byte pair
+        dec ecx
+        jmp .sum
+
+.fold:
+        mov     eax, edx
+        shr     eax, 16           ; high half 16-32bits 
+        jz      .done             ; nothing left to fold
+        
+        and     edx, 0xFFFF       ; keep low half
+        add     edx, eax          ; end-around carry
+        jmp     .fold             ; large sums need folds twice
+
+.done:
+        mov     eax, edx
+        not     eax               ; one's complement
+        and     eax, 0xFFFF       ; low 16 bits into ax
+        mov     [esp+28], eax     ; replace saved EAX with the answer
+
         popa
-        mov     eax, 0
         leave
         ret
