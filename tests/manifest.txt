@@ -16,3 +16,8 @@ sample05 valid
 bad01 invalid
 good_maxfrag valid
 good_dblfold valid
+own_sample06 valid
+own_sample07 valid
+own_sample08 valid
+own_bad02 invalid
+own_bad03 invalid
