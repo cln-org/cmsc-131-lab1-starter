@@ -14,3 +14,5 @@ sample03 valid
 sample04 valid
 sample05 valid
 bad01 invalid
+good_maxfrag valid
+good_dblfold valid
