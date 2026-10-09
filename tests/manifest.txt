@@ -14,3 +14,8 @@ sample03 valid
 sample04 valid
 sample05 valid
 bad01 invalid
+own_sample06 valid
+own_sample07 valid
+own_sample08 valid
+own_bad02 invalid
+own_bad03 invalid
