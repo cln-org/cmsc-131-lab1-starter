@@ -167,11 +167,16 @@ One entry per item. State what happens, what causes it, and what the group
 did about it.
 
 ### Known issues
+encode
+- `encode_header` has no range enforcer. It masks each field to width so a bad value can't overflow into the neighboring field, but it doesn't reject out of range values. Since it's `driver.c`'s job to do so according to the manual, the group left it at is.
 
 checksum and tests
 - Additional tests fails on a missing newline even though every field and checksum matched. The cause was that the expected .out files had no trailing newline and the program prints one. A trailing newline was simply added to the .out files
   
 
 ### Quirks
+encode
+- The argument order for `encode_header` is reversed from `decode_header`. `decode_header` has (hdr, out) and `encode_header` has (in, hdr), so the struct is at [ebp+12] in one and [ebp+8] in the other. It follows from the two C prototypes and right-to-left pushing under cdecl.
+
 checksum and tests
 - A result of 0 means valid. ip_checksum returns 0 for a header whose stored checksum is correct. The cause is that a correct header sums to 0xFFFF, and the one’s complement of that is 0. The same routine serves both uses: on a decode check the stored checksum is left in, and on encode the field is zeroed first and the returned value is kept. The group left this as the routine’s design.
