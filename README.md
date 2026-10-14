@@ -168,8 +168,14 @@ did about it.
 
 ### Known issues
 
+decode
 - The decode path does not validate any field values. decode_header only extracts bits and fills the struct, so it reads whatever the file holds. Version is not checked to be 4 and IHL is not checked to be 5, so a header with, say, version 7 or IHL 3 still decodes and prints those values. The checksum doesn’t catch this either, because it only verifies integrity: if a header’s checksum was computed over illegal values, it still reports VALID. We left this as is on purpose, since the handout says the decode path reads all bits as stored and that enforcing the standard belongs to the driver. If we wanted to fix it, we would compare version and IHL against 4 and 5 and report an error.
+checksum and tests
+- Additional tests fails on a missing newline even though every field and checksum matched. The cause was that the expected .out files had no trailing newline and the program prints one. A trailing newline was simply added to the .out files
 
 ### Quirks
 
+decode
 - The fragment offset in bytes 6-7 was the trickiest field, because it straddles a byte boundary: its top five bits are in byte 6 and its low eight bits are in byte 7, so no single byte holds it. We combine both bytes into one 16-bit word first. The top 3 bits of that word are the flags and the remaining 13 bits are the offset, so we get the offset by ANDing the word with 0x1FFF (0001 1111 1111 1111), which keeps the low 13 bits and clears the flags. A wrong mask is easy to miss, because an offset of 0 looks correct with any mask. 0x3FFF lets the MF flag leak into the offset, and 0xFFF drops the top offset bit. We confirmed our mask with sample04, which has a non-zero offset with MF set, and sample05, which has the maximum offset of 8191.
+checksum and tests
+- A result of 0 means valid. ip_checksum returns 0 for a header whose stored checksum is correct. The cause is that a correct header sums to 0xFFFF, and the one’s complement of that is 0. The same routine serves both uses: on a decode check the stored checksum is left in, and on encode the field is zeroed first and the returned value is kept. The group left this as the routine’s design.
