@@ -168,8 +168,10 @@ did about it.
 
 ### Known issues
 
-- 
+checksum and tests
+- Additional tests fails on a missing newline even though every field and checksum matched. The cause was that the expected .out files had no trailing newline and the program prints one. A trailing newline was simply added to the .out files
+  
 
 ### Quirks
-
-- 
+checksum and tests
+- A result of 0 means valid. ip_checksum returns 0 for a header whose stored checksum is correct. The cause is that a correct header sums to 0xFFFF, and the one’s complement of that is 0. The same routine serves both uses: on a decode check the stored checksum is left in, and on encode the field is zeroed first and the returned value is kept. The group left this as the routine’s design.
