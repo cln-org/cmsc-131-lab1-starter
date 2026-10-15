@@ -1,0 +1,14 @@
+Version:          4
+IHL:              5 (20 bytes)
+DSCP:             0
+ECN:              0
+Total Length:     20
+Identification:   48879
+Flags:            0
+Fragment Offset:  8191
+TTL:              64
+Protocol:         1 (ICMP)
+Header Checksum:  0x19E2
+Source:           192.168.0.1
+Destination:      192.168.0.199
+Checksum:         VALID
